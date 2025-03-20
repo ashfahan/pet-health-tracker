@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import type { Pet, Vaccination } from "@/lib/types"
 import { Button } from "@/components/ui/button"
@@ -27,6 +26,7 @@ import { Badge } from "@/components/ui/badge"
 import { generateId } from "@/lib/utils/data-utils"
 import { getVaccinationStatus, sortVaccinations } from "@/lib/utils/date-utils"
 import { getBadgeVariant, getStatusLabel } from "@/lib/utils/ui-utils"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface VaccinationsTrackerProps {
   pet: Pet
@@ -42,28 +42,62 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
   const [administeredDate, setAdministeredDate] = useState<Date | undefined>()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
+  // Validation states
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!name.trim()) {
+      newErrors.name = "Vaccination name is required"
+    }
+
+    if (!dueDate) {
+      newErrors.dueDate = "Due date is required"
+    }
+
+    if (administeredDate && administeredDate > new Date()) {
+      newErrors.administeredDate = "Administered date cannot be in the future"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !dueDate) return
+    setIsSubmitted(true)
+
+    if (!validateForm()) {
+      return
+    }
 
     const newVaccination: Vaccination = {
       id: generateId(),
       petId: pet.id,
       name,
-      dueDate,
+      dueDate: dueDate as Date,
       administeredDate,
-      notes,
+      notes: notes || undefined,
       createdAt: new Date(),
     }
 
     onAdd(newVaccination)
-    setIsDialogOpen(false)
+    setSubmitSuccess(true)
 
-    // Reset form
-    setName("")
-    setDueDate(undefined)
-    setNotes("")
-    setAdministeredDate(undefined)
+    setTimeout(() => {
+      setIsDialogOpen(false)
+      setSubmitSuccess(false)
+
+      // Reset form
+      setName("")
+      setDueDate(undefined)
+      setNotes("")
+      setAdministeredDate(undefined)
+      setIsSubmitted(false)
+    }, 1500)
   }
 
   // Sort vaccinations by due date (most recent first)
@@ -89,29 +123,47 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
               <DialogTitle>Add Vaccination Record</DialogTitle>
               <DialogDescription>Track vaccinations for {pet.name}</DialogDescription>
             </DialogHeader>
+
+            {submitSuccess && (
+              <Alert className="bg-green-50 border-green-200 text-green-800">
+                <AlertDescription>Vaccination added successfully!</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Vaccination Name</Label>
+                <Label htmlFor="name" className={errors.name ? "text-destructive" : ""}>
+                  Vaccination Name <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Rabies, Distemper"
-                  required
+                  className={errors.name ? "border-destructive" : ""}
+                  aria-invalid={!!errors.name}
                   aria-required="true"
                 />
+                {errors.name && isSubmitted && <p className="text-sm text-destructive">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date</Label>
+                <Label htmlFor="dueDate" className={errors.dueDate ? "text-destructive" : ""}>
+                  Due Date <span className="text-destructive">*</span>
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       id="dueDate"
                       variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}
-                      aria-label="Select due date"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dueDate && "text-muted-foreground",
+                        errors.dueDate && "border-destructive",
+                      )}
+                      aria-invalid={!!errors.dueDate}
                       aria-required="true"
+                      aria-label="Select due date"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                       {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
@@ -121,10 +173,13 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
                     <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus />
                   </PopoverContent>
                 </Popover>
+                {errors.dueDate && isSubmitted && <p className="text-sm text-destructive">{errors.dueDate}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="administeredDate">Administered Date (Optional)</Label>
+                <Label htmlFor="administeredDate" className={errors.administeredDate ? "text-destructive" : ""}>
+                  Administered Date (Optional)
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -133,7 +188,9 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
                       className={cn(
                         "w-full justify-start text-left font-normal",
                         !administeredDate && "text-muted-foreground",
+                        errors.administeredDate && "border-destructive",
                       )}
+                      aria-invalid={!!errors.administeredDate}
                       aria-label="Select administered date"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -150,6 +207,9 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
                     />
                   </PopoverContent>
                 </Popover>
+                {errors.administeredDate && isSubmitted && (
+                  <p className="text-sm text-destructive">{errors.administeredDate}</p>
+                )}
               </div>
 
               <div className="space-y-2">

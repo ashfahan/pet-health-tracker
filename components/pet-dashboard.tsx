@@ -1,5 +1,7 @@
 "use client"
 
+import { AlertDialogTrigger } from "@/components/ui/alert-dialog"
+
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PetOverview } from "@/components/pet-overview"
@@ -7,7 +9,7 @@ import { VaccinationsTracker } from "@/components/vaccinations-tracker"
 import { MedicationsTracker } from "@/components/medications-tracker"
 import { AppointmentsTracker } from "@/components/appointments-tracker"
 import { PetsList } from "@/components/pets-list"
-import { AddPetForm } from "@/components/add-pet-form"
+import { PetForm } from "@/components/pet-form"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,6 +25,17 @@ import { useLocalStorage } from "@/hooks/use-local-storage"
 import { filterByPet } from "@/lib/utils/date-utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { STORAGE_KEYS } from "@/lib/constants"
+import { Edit, Plus, Trash2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export function PetDashboard() {
   const [pets, setPets] = useLocalStorage<Pet[]>(STORAGE_KEYS.PETS, [])
@@ -31,7 +44,9 @@ export function PetDashboard() {
   const [appointments, setAppointments] = useLocalStorage<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, [])
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("overview")
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Select the first pet by default or when pets change
   // Only run this effect when pets array length changes, not on every change to the pets array
@@ -56,7 +71,27 @@ export function PetDashboard() {
   const addPet = (pet: Pet) => {
     setPets([...pets, pet])
     setSelectedPetId(pet.id)
-    setDialogOpen(false)
+    setAddDialogOpen(false)
+  }
+
+  const updatePet = (updatedPet: Pet) => {
+    setPets(pets.map((pet) => (pet.id === updatedPet.id ? updatedPet : pet)))
+    setEditDialogOpen(false)
+  }
+
+  const deletePet = () => {
+    if (!selectedPetId) return
+
+    // Delete pet and all related records
+    setPets(pets.filter((pet) => pet.id !== selectedPetId))
+    setVaccinations(vaccinations.filter((v) => v.petId !== selectedPetId))
+    setMedications(medications.filter((m) => m.petId !== selectedPetId))
+    setAppointments(appointments.filter((a) => a.petId !== selectedPetId))
+
+    // Select another pet if available
+    const remainingPets = pets.filter((pet) => pet.id !== selectedPetId)
+    setSelectedPetId(remainingPets.length > 0 ? remainingPets[0].id : null)
+    setDeleteDialogOpen(false)
   }
 
   const addVaccination = (vaccination: Vaccination) => {
@@ -102,7 +137,7 @@ export function PetDashboard() {
             Start by adding your first pet or load sample data to explore the application.
           </p>
           <div className="flex gap-2">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   Add Your First Pet
@@ -116,7 +151,7 @@ export function PetDashboard() {
                     Enter your pet's details to start tracking their health information.
                   </DialogDescription>
                 </DialogHeader>
-                <AddPetForm onSubmit={addPet} />
+                <PetForm onSubmit={addPet} mode="add" />
               </DialogContent>
             </Dialog>
             <Button variant="outline" onClick={loadSampleData}>
@@ -132,6 +167,7 @@ export function PetDashboard() {
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="w-full">
+                  <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                   Add New Pet
                   <span className="sr-only">Add another pet to your account</span>
                 </Button>
@@ -143,7 +179,7 @@ export function PetDashboard() {
                     Enter your pet's details to start tracking their health information.
                   </DialogDescription>
                 </DialogHeader>
-                <AddPetForm onSubmit={addPet} />
+                <PetForm onSubmit={addPet} mode="add" />
               </DialogContent>
             </Dialog>
           </aside>
@@ -152,6 +188,52 @@ export function PetDashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">{selectedPet.name}</h2>
+                <div className="flex gap-2">
+                  <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Edit className="mr-2 h-4 w-4" aria-hidden="true" />
+                        Edit Profile
+                        <span className="sr-only">Edit {selectedPet.name}'s profile</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Pet Profile</DialogTitle>
+                        <DialogDescription>Update {selectedPet.name}'s information</DialogDescription>
+                      </DialogHeader>
+                      <PetForm pet={selectedPet} onSubmit={updatePet} mode="edit" />
+                    </DialogContent>
+                  </Dialog>
+
+                  <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
+                        Delete
+                        <span className="sr-only">Delete {selectedPet.name}'s profile</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete {selectedPet.name}'s profile and all associated records including
+                          vaccinations, medications, and appointments.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={deletePet}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
