@@ -1,21 +1,14 @@
 import type React from "react"
-import "@/app/globals.css"
+import "@/styles/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>Pet Health Tracker</title>
-        <meta
-          name="description"
-          content="Track your pets' health information, vaccinations, medications, and vet appointments"
-        />
+        <meta name="description" content="Track your pets' health information, vaccinations, medications, and vet appointments" />
       </head>
       <body className="p-5">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="pet-health-theme">
@@ -26,11 +19,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-
-import './globals.css'
-
-export const metadata = {
-      generator: 'v0.dev'
-    };
