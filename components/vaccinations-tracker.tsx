@@ -1,103 +1,67 @@
 "use client"
-
-import type React from "react"
 import { useState } from "react"
 import type { Pet, Vaccination } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CalendarIcon, Plus, Trash2 } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils/ui-utils"
+import { Edit, Plus, Trash2 } from "lucide-react"
+import { format, formatDistanceToNow } from "date-fns"
 import { Badge } from "@/components/ui/badge"
-import { generateId } from "@/lib/utils/data-utils"
 import { getVaccinationStatus, sortVaccinations } from "@/lib/utils/date-utils"
-import { getBadgeVariant, getStatusLabel } from "@/lib/utils/ui-utils"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getBadgeVariant, getStatusLabel } from "@/lib/utils"
+import { toast } from "sonner"
+import { ConfirmDeleteDialog } from "@/components/dialogs/confirm-delete-dialog"
+import { VaccinationDialog } from "@/components/dialogs/vaccination-dialog"
 
 interface VaccinationsTrackerProps {
   pet: Pet
   vaccinations: Vaccination[]
   onAdd: (vaccination: Vaccination) => void
+  onUpdate: (vaccination: Vaccination) => void
   onDelete: (id: string) => void
 }
 
-export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: VaccinationsTrackerProps) {
-  const [name, setName] = useState("")
-  const [dueDate, setDueDate] = useState<Date | undefined>()
-  const [notes, setNotes] = useState("")
-  const [administeredDate, setAdministeredDate] = useState<Date | undefined>()
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+export function VaccinationsTracker({ pet, vaccinations, onAdd, onUpdate, onDelete }: VaccinationsTrackerProps) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [vaccinationToDelete, setVaccinationToDelete] = useState<Vaccination | null>(null)
+  const [vaccinationToEdit, setVaccinationToEdit] = useState<Vaccination | null>(null)
 
-  // Validation states
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const handleAddVaccination = (vaccination: Vaccination) => {
+    // Show toast notification
+    toast.success("Vaccination added", {
+      description: `${vaccination.name} has been added to ${pet.name}'s records.`,
+    })
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!name.trim()) {
-      newErrors.name = "Vaccination name is required"
-    }
-
-    if (!dueDate) {
-      newErrors.dueDate = "Due date is required"
-    }
-
-    if (administeredDate && administeredDate > new Date()) {
-      newErrors.administeredDate = "Administered date cannot be in the future"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    // Add the vaccination
+    onAdd(vaccination)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitted(true)
+  const handleEditVaccination = (vaccination: Vaccination) => {
+    setVaccinationToEdit(vaccination)
+    setIsEditDialogOpen(true)
+  }
 
-    if (!validateForm()) {
-      return
-    }
+  const handleUpdateVaccination = (updatedVaccination: Vaccination) => {
+    // Update the vaccination
+    onUpdate(updatedVaccination)
+  }
 
-    const newVaccination: Vaccination = {
-      id: generateId(),
-      petId: pet.id,
-      name,
-      dueDate: dueDate as Date,
-      administeredDate,
-      notes: notes || undefined,
-      createdAt: new Date(),
-    }
+  const initiateDelete = (vaccination: Vaccination) => {
+    setVaccinationToDelete(vaccination)
+    setDeleteDialogOpen(true)
+  }
 
-    onAdd(newVaccination)
-    setSubmitSuccess(true)
+  const confirmDelete = () => {
+    if (!vaccinationToDelete) return
 
-    setTimeout(() => {
-      setIsDialogOpen(false)
-      setSubmitSuccess(false)
+    // Delete the vaccination
+    onDelete(vaccinationToDelete.id)
 
-      // Reset form
-      setName("")
-      setDueDate(undefined)
-      setNotes("")
-      setAdministeredDate(undefined)
-      setIsSubmitted(false)
-    }, 1500)
+    // Close dialog and reset state
+    setDeleteDialogOpen(false)
+    setVaccinationToDelete(null)
   }
 
   // Sort vaccinations by due date (most recent first)
@@ -110,126 +74,11 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
           <h2 className="text-xl font-bold">Vaccinations</h2>
           <p className="text-muted-foreground">Track your pet's vaccination schedule</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-              <span>Add Vaccination</span>
-              <span className="sr-only">Add a new vaccination record for {pet.name}</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Vaccination Record</DialogTitle>
-              <DialogDescription>Track vaccinations for {pet.name}</DialogDescription>
-            </DialogHeader>
-
-            {submitSuccess && (
-              <Alert className="bg-green-50 border-green-200 text-green-800">
-                <AlertDescription>Vaccination added successfully!</AlertDescription>
-              </Alert>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className={errors.name ? "text-destructive" : ""}>
-                  Vaccination Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Rabies, Distemper"
-                  className={errors.name ? "border-destructive" : ""}
-                  aria-invalid={!!errors.name}
-                  aria-required="true"
-                />
-                {errors.name && isSubmitted && <p className="text-sm text-destructive">{errors.name}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dueDate" className={errors.dueDate ? "text-destructive" : ""}>
-                  Due Date <span className="text-destructive">*</span>
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="dueDate"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dueDate && "text-muted-foreground",
-                        errors.dueDate && "border-destructive",
-                      )}
-                      aria-invalid={!!errors.dueDate}
-                      aria-required="true"
-                      aria-label="Select due date"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                      {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus />
-                  </PopoverContent>
-                </Popover>
-                {errors.dueDate && isSubmitted && <p className="text-sm text-destructive">{errors.dueDate}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="administeredDate" className={errors.administeredDate ? "text-destructive" : ""}>
-                  Administered Date (Optional)
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="administeredDate"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !administeredDate && "text-muted-foreground",
-                        errors.administeredDate && "border-destructive",
-                      )}
-                      aria-invalid={!!errors.administeredDate}
-                      aria-label="Select administered date"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                      {administeredDate ? format(administeredDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={administeredDate}
-                      onSelect={setAdministeredDate}
-                      initialFocus
-                      disabled={(date) => date > new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.administeredDate && isSubmitted && (
-                  <p className="text-sm text-destructive">{errors.administeredDate}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional information, veterinarian, etc."
-                  rows={3}
-                  aria-label="Additional notes about the vaccination"
-                />
-              </div>
-
-              <Button type="submit" className="w-full">
-                Add Vaccination
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Add Vaccination</span>
+          <span className="sr-only">Add a new vaccination record for {pet.name}</span>
+        </Button>
       </div>
 
       <Card>
@@ -248,7 +97,14 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
               {sortedVaccinations.length > 0 ? (
                 sortedVaccinations.map((vaccination) => (
                   <TableRow key={vaccination.id}>
-                    <TableCell className="font-medium">{vaccination.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>{vaccination.name}</div>
+                      {vaccination.updatedAt && (
+                        <div className="text-xs text-muted-foreground">
+                          Updated {formatDistanceToNow(new Date(vaccination.updatedAt), { addSuffix: true })}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>{format(new Date(vaccination.dueDate), "MMM d, yyyy")}</TableCell>
                     <TableCell>
                       <Badge variant={getBadgeVariant(getVaccinationStatus(vaccination))}>
@@ -261,14 +117,24 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
                         : "Not yet"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(vaccination.id)}
-                        aria-label={`Delete ${vaccination.name} vaccination record`}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditVaccination(vaccination)}
+                          aria-label={`Edit ${vaccination.name} vaccination record`}
+                        >
+                          <Edit className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => initiateDelete(vaccination)}
+                          aria-label={`Delete ${vaccination.name} vaccination record`}
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -283,6 +149,35 @@ export function VaccinationsTracker({ pet, vaccinations, onAdd, onDelete }: Vacc
           </Table>
         </CardContent>
       </Card>
+
+      {/* Add Dialog */}
+      <VaccinationDialog
+        pet={pet}
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSubmit={handleAddVaccination}
+        mode="add"
+      />
+
+      {/* Edit Dialog */}
+      {vaccinationToEdit && (
+        <VaccinationDialog
+          pet={pet}
+          vaccination={vaccinationToEdit}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onSubmit={handleUpdateVaccination}
+          mode="edit"
+        />
+      )}
+
+      <ConfirmDeleteDialog
+        title="Delete Vaccination"
+        description={`Are you sure you want to delete ${vaccinationToDelete?.name}? This action cannot be undone.`}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }

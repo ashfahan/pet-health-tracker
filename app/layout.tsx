@@ -1,6 +1,7 @@
 import type React from "react"
 import "@/app/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function RootLayout({
   children,
@@ -19,6 +20,7 @@ export default function RootLayout({
       <body className="p-5">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="pet-health-theme">
           {children}
+          <Toaster position="top-right" closeButton />
         </ThemeProvider>
       </body>
     </html>

@@ -12,6 +12,7 @@ export interface Pet {
   profilePicture: string
   notes?: string
   createdAt: Date
+  updatedAt?: Date
 }
 
 export interface Vaccination {
@@ -22,6 +23,7 @@ export interface Vaccination {
   administeredDate?: Date
   notes?: string
   createdAt: Date
+  updatedAt?: Date
 }
 
 export interface Medication {
@@ -34,6 +36,7 @@ export interface Medication {
   endDate: Date
   notes?: string
   createdAt: Date
+  updatedAt?: Date
 }
 
 export interface Appointment {
@@ -45,5 +48,6 @@ export interface Appointment {
   reason: string
   notes?: string
   createdAt: Date
+  updatedAt?: Date
 }
 

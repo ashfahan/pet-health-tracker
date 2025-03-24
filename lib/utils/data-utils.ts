@@ -1,13 +1,6 @@
-import { nanoid } from "nanoid"
 import type { Pet, Vaccination, Medication, Appointment } from "@/lib/types"
 import { addDays, addMonths, addWeeks, addYears, subMonths, subYears } from "date-fns"
-
-/**
- * Generate a unique ID
- */
-export function generateId(): string {
-  return nanoid()
-}
+import { nanoid } from "nanoid"
 
 /**
  * Generate sample data for testing
@@ -17,7 +10,7 @@ export function generateSampleData() {
   const samplePets: Pet[] = [
     // Dog
     {
-      id: generateId(),
+      id: nanoid(),
       name: "Max",
       type: "DOG",
       breed: "Golden Retriever",
@@ -32,7 +25,7 @@ export function generateSampleData() {
 
     // Cat
     {
-      id: generateId(),
+      id: nanoid(),
       name: "Luna",
       type: "CAT",
       breed: "Maine Coon",
@@ -47,7 +40,7 @@ export function generateSampleData() {
 
     // Exotic - Bearded Dragon
     {
-      id: generateId(),
+      id: nanoid(),
       name: "Spike",
       type: "REPTILE",
       breed: "Bearded Dragon",
@@ -65,7 +58,7 @@ export function generateSampleData() {
   const sampleVaccinations: Vaccination[] = [
     // Max's vaccinations (Golden Retriever) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Rabies",
       dueDate: addYears(new Date(), 2),
@@ -75,7 +68,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "DHPP (Distemper, Hepatitis, Parainfluenza, Parvovirus)",
       dueDate: addMonths(new Date(), 2),
@@ -84,7 +77,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Bordetella (Kennel Cough)",
       dueDate: addDays(new Date(), 10),
@@ -94,7 +87,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Leptospirosis",
       dueDate: addMonths(new Date(), 2),
@@ -103,7 +96,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Canine Influenza (H3N8/H3N2)",
       dueDate: addMonths(new Date(), 4),
@@ -112,7 +105,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Lyme Disease",
       dueDate: addMonths(new Date(), 3),
@@ -122,7 +115,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Rattlesnake Vaccine",
       dueDate: addMonths(new Date(), 5),
@@ -132,7 +125,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Rattlesnake Vaccine (Booster)",
       dueDate: addMonths(new Date(), 6),
@@ -141,7 +134,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Canine Coronavirus",
       dueDate: addYears(new Date(), 1),
@@ -150,7 +143,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Distemper-Measles Combination",
       dueDate: subMonths(new Date(), 54), // Past vaccine from puppy series
@@ -162,7 +155,7 @@ export function generateSampleData() {
 
     // Luna's vaccinations (Maine Coon) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FVRCP (Feline Viral Rhinotracheitis, Calicivirus, Panleukopenia)",
       dueDate: addYears(new Date(), 2),
@@ -172,7 +165,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Rabies",
       dueDate: addYears(new Date(), 2),
@@ -182,7 +175,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FeLV (Feline Leukemia Virus)",
       dueDate: addMonths(new Date(), 1),
@@ -191,7 +184,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FIV (Feline Immunodeficiency Virus)",
       dueDate: addMonths(new Date(), 11),
@@ -200,7 +193,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Bordetella",
       dueDate: addMonths(new Date(), 11),
@@ -209,7 +202,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Chlamydia",
       dueDate: addMonths(new Date(), 11),
@@ -218,7 +211,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FVRCP (Initial)",
       dueDate: subYears(new Date(), 2), // Past vaccine from kitten series
@@ -228,7 +221,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FVRCP (Booster 1)",
       dueDate: subYears(new Date(), 2), // Past vaccine from kitten series
@@ -238,7 +231,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FVRCP (Booster 2)",
       dueDate: subYears(new Date(), 2), // Past vaccine from kitten series
@@ -247,7 +240,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "FeLV (Initial)",
       dueDate: subYears(new Date(), 2), // Past vaccine from kitten series
@@ -259,7 +252,7 @@ export function generateSampleData() {
 
     // Spike's vaccinations (Bearded Dragon) - limited, as reptiles have fewer routine vaccines
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Fortified Reptile Bacterin",
       dueDate: addYears(new Date(), 1),
@@ -269,7 +262,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Herpesvirus Vaccine",
       dueDate: addYears(new Date(), 1),
@@ -284,7 +277,7 @@ export function generateSampleData() {
   const sampleMedications: Medication[] = [
     // Max's medications (Golden Retriever) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Heartgard Plus (Ivermectin/Pyrantel)",
       dosage: "1 chewable tablet (68mcg ivermectin/57mg pyrantel)",
@@ -296,7 +289,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Nexgard (Afoxolaner)",
       dosage: "1 chewable tablet (28.3mg)",
@@ -308,7 +301,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Dasuquin Advanced with MSM",
       dosage: "2 tablets",
@@ -320,7 +313,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Fish Oil (Omega-3)",
       dosage: "1000mg (1 gel capsule)",
@@ -332,7 +325,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Apoquel (Oclacitinib)",
       dosage: "16mg (1 tablet)",
@@ -344,7 +337,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Cosequin Maximum Strength",
       dosage: "2 tablets",
@@ -356,7 +349,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Clavamox (Amoxicillin/Clavulanate)",
       dosage: "375mg (1 tablet)",
@@ -368,7 +361,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Metacam (Meloxicam)",
       dosage: "1.5mg/ml solution, 1.5ml",
@@ -380,7 +373,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "Proin ER (Phenylpropanolamine)",
       dosage: "38mg (1/2 tablet)",
@@ -392,7 +385,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       name: "CBD Oil (Cannabidiol)",
       dosage: "10mg (1ml oral solution)",
@@ -406,7 +399,7 @@ export function generateSampleData() {
 
     // Luna's medications (Maine Coon) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Revolution Plus (Selamectin/Sarolaner)",
       dosage: "1 applicator (0.5ml)",
@@ -418,7 +411,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Atenolol",
       dosage: "6.25mg (1/4 of 25mg tablet)",
@@ -430,7 +423,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Methimazole",
       dosage: "5mg (1 tablet)",
@@ -442,7 +435,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Clavamox (Amoxicillin/Clavulanate)",
       dosage: "62.5mg (1/2 tablet)",
@@ -454,7 +447,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Miralax (Polyethylene Glycol)",
       dosage: "1/8 tsp",
@@ -466,7 +459,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Cerenia (Maropitant Citrate)",
       dosage: "16mg (1/2 tablet)",
@@ -478,7 +471,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Cosequin for Cats",
       dosage: "1 capsule (sprinkled on food)",
@@ -490,7 +483,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Omega-3 Fish Oil",
       dosage: "500mg (1/2 capsule)",
@@ -502,7 +495,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Lactulose",
       dosage: "0.5ml oral solution",
@@ -514,7 +507,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       name: "Lysine Supplement",
       dosage: "250mg powder",
@@ -528,7 +521,7 @@ export function generateSampleData() {
 
     // Spike's medications (Bearded Dragon) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Calcium with Vitamin D3",
       dosage: "Small pinch (approximately 1/8 tsp)",
@@ -540,7 +533,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Multivitamin Powder",
       dosage: "Small pinch (approximately 1/16 tsp)",
@@ -552,7 +545,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Fluker's Repta-Aid",
       dosage: "0.5ml oral solution",
@@ -564,7 +557,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Baytril (Enrofloxacin)",
       dosage: "5mg/ml solution, 0.1ml",
@@ -576,7 +569,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Panacur (Fenbendazole)",
       dosage: "100mg/ml paste, 0.05ml",
@@ -588,7 +581,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Carnivore Care",
       dosage: "2ml reconstituted powder",
@@ -600,7 +593,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Betadine Solution (Povidone Iodine)",
       dosage: "5ml diluted in 250ml water",
@@ -612,7 +605,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Bee Pollen Granules",
       dosage: "Small pinch",
@@ -624,7 +617,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Probiotic Powder",
       dosage: "1/16 tsp",
@@ -636,7 +629,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       name: "Silver Sulfadiazine Cream",
       dosage: "Thin layer",
@@ -653,7 +646,7 @@ export function generateSampleData() {
   const sampleAppointments: Appointment[] = [
     // Max's appointments (Golden Retriever) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Dr. Johnson",
       vetPhone: "555-123-4567",
@@ -664,7 +657,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Dr. Johnson",
       vetPhone: "555-123-4567",
@@ -675,7 +668,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "PetSmart Grooming",
       vetPhone: "555-987-6543",
@@ -686,7 +679,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Doggy Dental Specialists",
       vetPhone: "555-444-5555",
@@ -697,7 +690,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Emergency Vet Hospital",
       vetPhone: "555-911-0000",
@@ -708,7 +701,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Dr. Johnson",
       vetPhone: "555-123-4567",
@@ -719,7 +712,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Canine Rehabilitation Center",
       vetPhone: "555-789-1234",
@@ -730,7 +723,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "PetSmart Grooming",
       vetPhone: "555-987-6543",
@@ -741,7 +734,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Mobile Vaccination Clinic",
       vetPhone: "555-VAX-PETS",
@@ -752,7 +745,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[0].id,
       vetName: "Happy Tails Boarding",
       vetPhone: "555-222-3333",
@@ -765,7 +758,7 @@ export function generateSampleData() {
 
     // Luna's appointments (Maine Coon) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Dr. Martinez - Feline Specialist",
       vetPhone: "555-456-7890",
@@ -776,7 +769,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Dr. Martinez - Feline Specialist",
       vetPhone: "555-456-7890",
@@ -787,7 +780,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Feline Wellness Center",
       vetPhone: "555-222-3333",
@@ -798,7 +791,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Kitty Clips Mobile Groomer",
       vetPhone: "555-GROOM-CAT",
@@ -809,7 +802,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Dr. Martinez - Feline Specialist",
       vetPhone: "555-456-7890",
@@ -820,7 +813,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Dr. Martinez - Feline Specialist",
       vetPhone: "555-456-7890",
@@ -831,7 +824,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Dr. Martinez - Feline Specialist",
       vetPhone: "555-456-7890",
@@ -842,7 +835,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "The Cat Sitter",
       vetPhone: "555-CAT-SITT",
@@ -853,7 +846,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Feline Diagnostics Lab",
       vetPhone: "555-888-9999",
@@ -864,7 +857,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[1].id,
       vetName: "Emergency Vet Hospital",
       vetPhone: "555-911-0000",
@@ -877,7 +870,7 @@ export function generateSampleData() {
 
     // Spike's appointments (Bearded Dragon) - 10 entries
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -888,7 +881,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -899,7 +892,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -910,7 +903,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -921,7 +914,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -932,7 +925,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -943,7 +936,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Chen - Reptile Orthopedics",
       vetPhone: "555-333-4444",
@@ -954,7 +947,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Scales & Tails Boarding",
       vetPhone: "555-REP-TILE",
@@ -965,7 +958,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",
@@ -976,7 +969,7 @@ export function generateSampleData() {
       createdAt: new Date(),
     },
     {
-      id: generateId(),
+      id: nanoid(),
       petId: samplePets[2].id,
       vetName: "Dr. Lee - Exotic Animal Clinic",
       vetPhone: "555-888-7777",

@@ -1,77 +1,67 @@
 "use client"
-
-import type React from "react"
-
 import { useState } from "react"
 import type { Pet, Medication } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
-import { CalendarIcon, Plus, Trash2 } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils/ui-utils"
+import { Edit, Plus, Trash2 } from "lucide-react"
+import { format, formatDistanceToNow } from "date-fns"
 import { Badge } from "@/components/ui/badge"
-import { generateId } from "@/lib/utils/data-utils"
 import { getMedicationStatus, sortMedications } from "@/lib/utils/date-utils"
-import { getBadgeVariant, getStatusLabel } from "@/lib/utils/ui-utils"
-import { MEDICATION_FREQUENCIES } from "@/lib/constants"
+import { getBadgeVariant, getStatusLabel } from "@/lib/utils"
+import { toast } from "sonner"
+import { ConfirmDeleteDialog } from "@/components/dialogs/confirm-delete-dialog"
+import { MedicationDialog } from "@/components/dialogs/medication-dialog"
 
 interface MedicationsTrackerProps {
   pet: Pet
   medications: Medication[]
   onAdd: (medication: Medication) => void
+  onUpdate: (medication: Medication) => void
   onDelete: (id: string) => void
 }
 
-export function MedicationsTracker({ pet, medications, onAdd, onDelete }: MedicationsTrackerProps) {
-  const [name, setName] = useState("")
-  const [dosage, setDosage] = useState("")
-  const [frequency, setFrequency] = useState("")
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date())
-  const [endDate, setEndDate] = useState<Date | undefined>()
-  const [notes, setNotes] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+export function MedicationsTracker({ pet, medications, onAdd, onUpdate, onDelete }: MedicationsTrackerProps) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [medicationToDelete, setMedicationToDelete] = useState<Medication | null>(null)
+  const [medicationToEdit, setMedicationToEdit] = useState<Medication | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name || !dosage || !frequency || !startDate || !endDate) return
+  const handleAddMedication = (medication: Medication) => {
+    // Show toast notification
+    toast.success("Medication added", {
+      description: `${medication.name} has been added to ${pet.name}'s records.`,
+    })
 
-    const newMedication: Medication = {
-      id: generateId(),
-      petId: pet.id,
-      name,
-      dosage,
-      frequency,
-      startDate,
-      endDate,
-      notes,
-      createdAt: new Date(),
-    }
+    // Add the medication
+    onAdd(medication)
+  }
 
-    onAdd(newMedication)
-    setIsDialogOpen(false)
+  const handleEditMedication = (medication: Medication) => {
+    setMedicationToEdit(medication)
+    setIsEditDialogOpen(true)
+  }
 
-    // Reset form
-    setName("")
-    setDosage("")
-    setFrequency("")
-    setStartDate(new Date())
-    setEndDate(undefined)
-    setNotes("")
+  const handleUpdateMedication = (updatedMedication: Medication) => {
+    // Update the medication
+    onUpdate(updatedMedication)
+  }
+
+  const initiateDelete = (medication: Medication) => {
+    setMedicationToDelete(medication)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (!medicationToDelete) return
+
+    // Delete the medication
+    onDelete(medicationToDelete.id)
+
+    // Close dialog and reset state
+    setDeleteDialogOpen(false)
+    setMedicationToDelete(null)
   }
 
   // Sort medications by status and start date
@@ -84,134 +74,11 @@ export function MedicationsTracker({ pet, medications, onAdd, onDelete }: Medica
           <h2 className="text-xl font-bold">Medications</h2>
           <p className="text-muted-foreground">Manage your pet's medication schedule</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-              <span>Add Medication</span>
-              <span className="sr-only">Add a new medication for {pet.name}</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Medication</DialogTitle>
-              <DialogDescription>Add a medication for {pet.name}</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Medication Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Antibiotics, Pain medication"
-                  required
-                  aria-required="true"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dosage">Dosage</Label>
-                <Input
-                  id="dosage"
-                  value={dosage}
-                  onChange={(e) => setDosage(e.target.value)}
-                  placeholder="e.g., 5mg, 1 tablet"
-                  required
-                  aria-required="true"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="frequency">Frequency</Label>
-                <Select value={frequency} onValueChange={setFrequency} required>
-                  <SelectTrigger id="frequency" aria-required="true">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MEDICATION_FREQUENCIES.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        id="startDate"
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !startDate && "text-muted-foreground",
-                        )}
-                        aria-label="Select start date"
-                        aria-required="true"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                        {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        id="endDate"
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !endDate && "text-muted-foreground",
-                        )}
-                        aria-label="Select end date"
-                        aria-required="true"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                        {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={endDate}
-                        onSelect={setEndDate}
-                        initialFocus
-                        disabled={(date) => (startDate ? date < startDate : false)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional information, instructions, etc."
-                  rows={3}
-                  aria-label="Additional notes about the medication"
-                />
-              </div>
-
-              <Button type="submit" className="w-full">
-                Add Medication
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Add Medication</span>
+          <span className="sr-only">Add a new medication for {pet.name}</span>
+        </Button>
       </div>
 
       <Card>
@@ -230,7 +97,14 @@ export function MedicationsTracker({ pet, medications, onAdd, onDelete }: Medica
               {sortedMedications.length > 0 ? (
                 sortedMedications.map((medication) => (
                   <TableRow key={medication.id}>
-                    <TableCell className="font-medium">{medication.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>{medication.name}</div>
+                      {medication.updatedAt && (
+                        <div className="text-xs text-muted-foreground">
+                          Updated {formatDistanceToNow(new Date(medication.updatedAt), { addSuffix: true })}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div>{medication.dosage}</div>
                       <div className="text-sm text-muted-foreground">{medication.frequency}</div>
@@ -247,14 +121,24 @@ export function MedicationsTracker({ pet, medications, onAdd, onDelete }: Medica
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(medication.id)}
-                        aria-label={`Delete ${medication.name} medication record`}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditMedication(medication)}
+                          aria-label={`Edit ${medication.name} medication record`}
+                        >
+                          <Edit className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => initiateDelete(medication)}
+                          aria-label={`Delete ${medication.name} medication record`}
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -269,6 +153,35 @@ export function MedicationsTracker({ pet, medications, onAdd, onDelete }: Medica
           </Table>
         </CardContent>
       </Card>
+
+      {/* Add Dialog */}
+      <MedicationDialog
+        pet={pet}
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSubmit={handleAddMedication}
+        mode="add"
+      />
+
+      {/* Edit Dialog */}
+      {medicationToEdit && (
+        <MedicationDialog
+          pet={pet}
+          medication={medicationToEdit}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onSubmit={handleUpdateMedication}
+          mode="edit"
+        />
+      )}
+
+      <ConfirmDeleteDialog
+        title="Delete Medication"
+        description={`Are you sure you want to delete ${medicationToDelete?.name}? This action cannot be undone.`}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }

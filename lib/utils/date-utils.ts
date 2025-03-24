@@ -1,6 +1,4 @@
-import { differenceInYears, differenceInMonths, isFuture, isPast, isToday, addDays } from "date-fns"
-import { STATUS_TYPES } from "@/lib/constants"
-import type { Vaccination, Medication, Appointment } from "@/lib/types"
+import { differenceInYears, differenceInMonths, isPast, isToday, addDays } from "date-fns"
 
 /**
  * Calculate age from birth date in years and months
@@ -20,7 +18,9 @@ export function calculateAge(birthDate: Date): string {
     if (remainingMonths === 0) {
       return `${years} ${years === 1 ? "year" : "years"}`
     } else {
-      return `${years} ${years === 1 ? "year" : "years"}, ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`
+      return `${years} ${years === 1 ? "year" : "years"}, ${remainingMonths} ${
+        remainingMonths === 1 ? "month" : "months"
+      }`
     }
   }
 }
@@ -28,53 +28,54 @@ export function calculateAge(birthDate: Date): string {
 /**
  * Get vaccination status based on due date and administered date
  */
-export function getVaccinationStatus(vaccination: Vaccination): string {
+export function getVaccinationStatus(vaccination: any): string {
   const dueDate = new Date(vaccination.dueDate)
 
   if (vaccination.administeredDate) {
-    return STATUS_TYPES.COMPLETED
+    return "completed"
   } else if (isPast(dueDate) && !isToday(dueDate)) {
-    return STATUS_TYPES.OVERDUE
+    return "overdue"
   } else if (isToday(dueDate) || isPast(addDays(dueDate, -7))) {
-    return STATUS_TYPES.DUE_SOON
+    return "due-soon"
   } else {
-    return STATUS_TYPES.UPCOMING
+    return "upcoming"
   }
 }
 
 /**
  * Get medication status based on start and end dates
  */
-export function getMedicationStatus(medication: Medication): string {
+export function getMedicationStatus(medication: any): string {
   const startDate = new Date(medication.startDate)
   const endDate = new Date(medication.endDate)
+  const now = new Date()
 
   if (isPast(endDate) && !isToday(endDate)) {
-    return STATUS_TYPES.COMPLETED
+    return "completed"
   } else if (!isPast(startDate) && !isToday(startDate)) {
-    return STATUS_TYPES.UPCOMING
+    return "upcoming"
   } else {
-    return STATUS_TYPES.ACTIVE
+    return "active"
   }
 }
 
 /**
  * Get appointment status based on date
  */
-export function getAppointmentStatus(appointment: Appointment): string {
+export function getAppointmentStatus(appointment: any): string {
   const appointmentDate = new Date(appointment.date)
 
-  if (isFuture(appointmentDate) || isToday(appointmentDate)) {
-    return STATUS_TYPES.UPCOMING
+  if (!isPast(appointmentDate) || isToday(appointmentDate)) {
+    return "upcoming"
   } else {
-    return STATUS_TYPES.COMPLETED
+    return "completed"
   }
 }
 
 /**
  * Sort vaccinations by status and due date
  */
-export function sortVaccinations(vaccinations: Vaccination[]): Vaccination[] {
+export function sortVaccinations(vaccinations: any[]): any[] {
   return [...vaccinations].sort((a, b) => {
     // Completed vaccinations at the bottom
     if (a.administeredDate && !b.administeredDate) return 1
@@ -88,16 +89,16 @@ export function sortVaccinations(vaccinations: Vaccination[]): Vaccination[] {
 /**
  * Sort medications by status and start date
  */
-export function sortMedications(medications: Medication[]): Medication[] {
+export function sortMedications(medications: any[]): any[] {
   return [...medications].sort((a, b) => {
     const statusA = getMedicationStatus(a)
     const statusB = getMedicationStatus(b)
 
     // Active first, then upcoming, then completed
-    if (statusA === STATUS_TYPES.ACTIVE && statusB !== STATUS_TYPES.ACTIVE) return -1
-    if (statusA !== STATUS_TYPES.ACTIVE && statusB === STATUS_TYPES.ACTIVE) return 1
-    if (statusA === STATUS_TYPES.UPCOMING && statusB === STATUS_TYPES.COMPLETED) return -1
-    if (statusA === STATUS_TYPES.COMPLETED && statusB === STATUS_TYPES.UPCOMING) return 1
+    if (statusA === "active" && statusB !== "active") return -1
+    if (statusA !== "active" && statusB === "active") return 1
+    if (statusA === "upcoming" && statusB === "completed") return -1
+    if (statusA === "completed" && statusB === "upcoming") return 1
 
     // Then sort by start date
     return new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
@@ -107,17 +108,18 @@ export function sortMedications(medications: Medication[]): Medication[] {
 /**
  * Sort appointments by date (future first, then past)
  */
-export function sortAppointments(appointments: Appointment[]): Appointment[] {
+export function sortAppointments(appointments: any[]): any[] {
   return [...appointments].sort((a, b) => {
     const dateA = new Date(a.date)
     const dateB = new Date(b.date)
+    const now = new Date()
 
     // Future appointments first
-    if (isFuture(dateA) && !isFuture(dateB)) return -1
-    if (!isFuture(dateA) && isFuture(dateB)) return 1
+    if (!isPast(dateA) && isPast(dateB)) return -1
+    if (isPast(dateA) && !isPast(dateB)) return 1
 
     // Then sort by date (newest first for future, oldest first for past)
-    if (isFuture(dateA) && isFuture(dateB)) {
+    if (!isPast(dateA) && !isPast(dateB)) {
       return dateA.getTime() - dateB.getTime() // Ascending for future
     } else {
       return dateB.getTime() - dateA.getTime() // Descending for past
@@ -140,7 +142,7 @@ export function getUpcomingItems<T>(items: T[], getStatus: (item: T) => string, 
   return items
     .filter((item) => {
       const status = getStatus(item)
-      return status === STATUS_TYPES.UPCOMING || status === STATUS_TYPES.DUE_SOON || status === STATUS_TYPES.ACTIVE
+      return status === "upcoming" || status === "due-soon" || status === "active"
     })
     .slice(0, limit)
 }

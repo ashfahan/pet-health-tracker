@@ -1,81 +1,68 @@
 "use client"
-
-import type React from "react"
-
 import { useState } from "react"
 import type { Pet, Appointment } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
-import { CalendarIcon, Clock, Plus, Trash2 } from "lucide-react"
-import { format, isAfter, isToday } from "date-fns"
-import { cn } from "@/lib/utils/ui-utils"
+import { Edit, Plus, Trash2 } from "lucide-react"
+import { format, formatDistanceToNow, isAfter, isToday } from "date-fns"
 import { Badge } from "@/components/ui/badge"
-import { generateId } from "@/lib/utils/data-utils"
 import { sortAppointments } from "@/lib/utils/date-utils"
-import { getBadgeVariant } from "@/lib/utils/ui-utils"
-import { APPOINTMENT_REASONS, STATUS_TYPES } from "@/lib/constants"
+import { getBadgeVariant } from "@/lib/utils"
+import { STATUS_TYPES } from "@/lib/constants"
+import { toast } from "sonner"
+import { ConfirmDeleteDialog } from "@/components/dialogs/confirm-delete-dialog"
+import { AppointmentDialog } from "@/components/dialogs/appointment-dialog"
 
 interface AppointmentsTrackerProps {
   pet: Pet
   appointments: Appointment[]
   onAdd: (appointment: Appointment) => void
+  onUpdate: (appointment: Appointment) => void
   onDelete: (id: string) => void
 }
 
-export function AppointmentsTracker({ pet, appointments, onAdd, onDelete }: AppointmentsTrackerProps) {
-  const [vetName, setVetName] = useState("")
-  const [vetPhone, setVetPhone] = useState("")
-  const [date, setDate] = useState<Date | undefined>(new Date())
-  const [time, setTime] = useState("")
-  const [reason, setReason] = useState("")
-  const [notes, setNotes] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+export function AppointmentsTracker({ pet, appointments, onAdd, onUpdate, onDelete }: AppointmentsTrackerProps) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null)
+  const [appointmentToEdit, setAppointmentToEdit] = useState<Appointment | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!vetName || !date || !time || !reason) return
+  const handleAddAppointment = (appointment: Appointment) => {
+    // Show toast notification
+    toast.success("Appointment scheduled", {
+      description: `Appointment with ${appointment.vetName} has been added to ${pet.name}'s records.`,
+    })
 
-    // Create a date with the combined date and time
-    const appointmentDate = new Date(date)
-    const [hours, minutes] = time.split(":").map(Number)
-    appointmentDate.setHours(hours, minutes)
+    // Add the appointment
+    onAdd(appointment)
+  }
 
-    const newAppointment: Appointment = {
-      id: generateId(),
-      petId: pet.id,
-      vetName,
-      vetPhone,
-      date: appointmentDate,
-      reason,
-      notes,
-      createdAt: new Date(),
-    }
+  const handleEditAppointment = (appointment: Appointment) => {
+    setAppointmentToEdit(appointment)
+    setIsEditDialogOpen(true)
+  }
 
-    onAdd(newAppointment)
-    setIsDialogOpen(false)
+  const handleUpdateAppointment = (updatedAppointment: Appointment) => {
+    // Update the appointment
+    onUpdate(updatedAppointment)
+  }
 
-    // Reset form
-    setVetName("")
-    setVetPhone("")
-    setDate(new Date())
-    setTime("")
-    setReason("")
-    setNotes("")
+  const initiateDelete = (appointment: Appointment) => {
+    setAppointmentToDelete(appointment)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (!appointmentToDelete) return
+
+    // Delete the appointment
+    onDelete(appointmentToDelete.id)
+
+    // Close dialog and reset state
+    setDeleteDialogOpen(false)
+    setAppointmentToDelete(null)
   }
 
   // Sort appointments by date (future first, then past)
@@ -88,119 +75,11 @@ export function AppointmentsTracker({ pet, appointments, onAdd, onDelete }: Appo
           <h2 className="text-xl font-bold">Appointments</h2>
           <p className="text-muted-foreground">Track your pet's vet appointments</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-              <span>Add Appointment</span>
-              <span className="sr-only">Schedule a new appointment for {pet.name}</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Schedule Appointment</DialogTitle>
-              <DialogDescription>Schedule a vet appointment for {pet.name}</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="vetName">Veterinarian / Clinic</Label>
-                  <Input
-                    id="vetName"
-                    value={vetName}
-                    onChange={(e) => setVetName(e.target.value)}
-                    placeholder="Name of vet or clinic"
-                    required
-                    aria-required="true"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="vetPhone">Phone (Optional)</Label>
-                  <Input
-                    id="vetPhone"
-                    value={vetPhone}
-                    onChange={(e) => setVetPhone(e.target.value)}
-                    placeholder="Phone number"
-                    aria-label="Veterinarian phone number"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        id="date"
-                        variant="outline"
-                        className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                        aria-label="Select appointment date"
-                        aria-required="true"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                        {date ? format(date, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="time">Time</Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <Input
-                      id="time"
-                      type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                      className="pl-10"
-                      required
-                      aria-required="true"
-                      aria-label="Select appointment time"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="reason">Reason for Visit</Label>
-                <Select value={reason} onValueChange={setReason} required>
-                  <SelectTrigger id="reason" aria-required="true">
-                    <SelectValue placeholder="Select reason" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {APPOINTMENT_REASONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional information, symptoms, questions to ask, etc."
-                  rows={3}
-                  aria-label="Additional notes about the appointment"
-                />
-              </div>
-
-              <Button type="submit" className="w-full">
-                Schedule Appointment
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Add Appointment</span>
+          <span className="sr-only">Schedule a new appointment for {pet.name}</span>
+        </Button>
       </div>
 
       <Card>
@@ -224,6 +103,11 @@ export function AppointmentsTracker({ pet, appointments, onAdd, onDelete }: Appo
                       <div className="text-sm text-muted-foreground">
                         {format(new Date(appointment.date), "h:mm a")}
                       </div>
+                      {appointment.updatedAt && (
+                        <div className="text-xs text-muted-foreground">
+                          Updated {formatDistanceToNow(new Date(appointment.updatedAt), { addSuffix: true })}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div>{appointment.vetName}</div>
@@ -251,14 +135,24 @@ export function AppointmentsTracker({ pet, appointments, onAdd, onDelete }: Appo
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(appointment.id)}
-                        aria-label={`Delete appointment with ${appointment.vetName}`}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditAppointment(appointment)}
+                          aria-label={`Edit appointment with ${appointment.vetName}`}
+                        >
+                          <Edit className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => initiateDelete(appointment)}
+                          aria-label={`Delete appointment with ${appointment.vetName}`}
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -273,6 +167,35 @@ export function AppointmentsTracker({ pet, appointments, onAdd, onDelete }: Appo
           </Table>
         </CardContent>
       </Card>
+
+      {/* Add Dialog */}
+      <AppointmentDialog
+        pet={pet}
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSubmit={handleAddAppointment}
+        mode="add"
+      />
+
+      {/* Edit Dialog */}
+      {appointmentToEdit && (
+        <AppointmentDialog
+          pet={pet}
+          appointment={appointmentToEdit}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onSubmit={handleUpdateAppointment}
+          mode="edit"
+        />
+      )}
+
+      <ConfirmDeleteDialog
+        title="Delete Appointment"
+        description={`Are you sure you want to delete the appointment with ${appointmentToDelete?.vetName}? This action cannot be undone.`}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }
